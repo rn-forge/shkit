@@ -8,7 +8,9 @@ on:
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    # Pinned to 22.04: kcov was dropped from Ubuntu's repos in 24.04
+    # (noble) onward, and is only apt-installable through 22.04 (jammy).
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
@@ -17,7 +19,7 @@ jobs:
 
       - name: Install ShellSpec
         run: |
-          curl -fsSL https://git.io/shellspec | sh -s -- --yes
+          curl -fsSL https://raw.githubusercontent.com/shellspec/shellspec/master/install.sh | sh -s -- --yes
 
       - name: Install kcov
         run: |
@@ -68,7 +70,7 @@ jobs:
 
       - name: Install ShellSpec
         run: |
-          curl -fsSL https://git.io/shellspec | sh -s -- --yes
+          curl -fsSL https://raw.githubusercontent.com/shellspec/shellspec/master/install.sh | sh -s -- --yes
 
       - name: Run zsh tests
         run: mise run test-zsh
