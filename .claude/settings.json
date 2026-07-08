@@ -3,7 +3,12 @@
     "allow": [
       "Bash",
       "Edit",
-      "Write"
+      "Write",
+      "Bash(mise *)",
+      "Bash(shellspec *)",
+      "Bash(curl -fsSL *)",
+      "Bash(gh *)",
+      "Bash(git *)"
     ]
   }
 }

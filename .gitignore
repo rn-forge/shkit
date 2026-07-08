@@ -3,3 +3,4 @@
 
 # generated artifacts
 dist/
+coverage/

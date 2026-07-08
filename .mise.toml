@@ -49,7 +49,7 @@ run = "rm -rf dist/"
 
 [tasks.coverage]
 description = "Run tests under bash with kcov and generate an HTML+lcov coverage report in coverage/"
-run = "shellspec --shell bash --kcov tests/"
+run = "shellspec --shell bash --kcov --kcov-options '--include-path=src/lib,src/source.sh,dist/install.sh,dist/shkit/rnfshk.sh,dist/shkit/commands' tests/"
 
 [tasks.verify]
 description = "Full pipeline (CI): format-check, lint, coverage, build, docs. Needs kcov — use verify-local on macOS."
