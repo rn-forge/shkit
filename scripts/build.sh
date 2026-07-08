@@ -57,6 +57,7 @@ sha256_of() {
 GIT_SHA="$(git -C "${REPO_ROOT}" rev-parse --short HEAD 2>/dev/null || printf 'unknown')"
 # VERSION may be set by the caller (e.g. CI sets it to the tag: v1.0.0).
 VERSION="$(cat "${REPO_ROOT}"/VERSION)"
+GITHUB_ORG="${RNF_GITHUB_ORG:-rn-forge}"
 
 rm -rf "${STAGE}"
 mkdir -p "${STAGE}"
@@ -71,7 +72,7 @@ current_line=0
   printf '# Version: %s\n' "${VERSION}"
   printf '# Built:   %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
   printf '# Commit:  %s\n' "$GIT_SHA"
-  printf '# Source:  https://github.com/rohitnarayanan/rn-forge-shkit\n'
+  printf '# Source:  https://github.com/%s/rn-forge-shkit\n' "$GITHUB_ORG"
   printf '\n'
   printf '_RNF_VERSION="%s (%s)"\n' "$VERSION" "$GIT_SHA"
   printf '\n'

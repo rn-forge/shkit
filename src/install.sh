@@ -7,7 +7,7 @@
 #   ${RNF_HOME}/bin/rnfshk         symlink to current/rnfshk.sh
 #
 # Standalone entry point — curl it directly on a fresh machine:
-#   curl -fsSL https://github.com/rohitnarayanan/rn-forge-shkit/releases/latest/download/install.sh | bash
+#   curl -fsSL https://github.com/rn-forge/rn-forge-shkit/releases/latest/download/install.sh | bash
 # or run it from a checkout/unpacked release: bash dist/shkit/install.sh
 #
 # When run next to an unpacked dist (sibling rn-forge-shkit.sh + VERSION
@@ -24,10 +24,12 @@
 #   RNF_HOME        Install root. Default: ~/.rn-forge.
 #   RNF_VERSION     Pin a release (e.g. 0.2.0). Default: latest.
 #   RNF_UPDATE_URL  Override the tarball download URL entirely.
+#   RNF_GITHUB_ORG  GitHub org/user the release lives under. Default: rn-forge.
 
 set -eo pipefail
 
 RNF_HOME="${RNF_HOME:-${HOME}/.rn-forge}"
+RNF_GITHUB_ORG="${RNF_GITHUB_ORG:-rn-forge}"
 
 FORCE_FETCH=0
 if [ "${1:-}" = "--update" ]; then
@@ -58,9 +60,9 @@ fetch_and_install() {
 
   local url
   if [ -n "${RNF_VERSION:-}" ]; then
-    url="${RNF_UPDATE_URL:-https://github.com/rohitnarayanan/rn-forge-shkit/releases/download/v${RNF_VERSION}/rn-forge-shkit.tar.gz}"
+    url="${RNF_UPDATE_URL:-https://github.com/${RNF_GITHUB_ORG}/rn-forge-shkit/releases/download/v${RNF_VERSION}/rn-forge-shkit.tar.gz}"
   else
-    url="${RNF_UPDATE_URL:-https://github.com/rohitnarayanan/rn-forge-shkit/releases/latest/download/rn-forge-shkit.tar.gz}"
+    url="${RNF_UPDATE_URL:-https://github.com/${RNF_GITHUB_ORG}/rn-forge-shkit/releases/latest/download/rn-forge-shkit.tar.gz}"
   fi
 
   local tmp

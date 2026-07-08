@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch: # manual trigger
 
 jobs:
   verify:
@@ -28,6 +29,16 @@ jobs:
 
       - name: Verify
         run: mise run verify
+
+      - name: Coverage summary
+        if: always() && hashFiles('coverage/cobertura.xml') != ''
+        uses: insightsengineering/coverage-action@v3
+        with:
+          path: coverage/cobertura.xml
+          publish: false
+          diff: false
+          skip-diff-storage: true
+          fail: false
 
       - name: Check generated docs are committed
         run: |
@@ -80,7 +91,8 @@ jobs:
     # publish, but an actual zsh test failure must.
     if: |
       always() &&
-      github.event_name != 'pull_request' &&
+      github.event_name == 'push' &&
+      github.ref_name == 'main' &&
       needs.verify.result == 'success' &&
       (needs.verify-zsh.result == 'success' || needs.verify-zsh.result == 'skipped')
     needs: [verify, verify-zsh]
