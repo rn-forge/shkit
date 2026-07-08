@@ -3,7 +3,7 @@
 # Streams the rn-forge-shkit library into the current shell. Meant to be
 # sourced from consuming scripts (bash or zsh), not executed:
 #
-#   . <(curl -fsSL https://github.com/rohitnarayanan/rn-forge-shkit/releases/latest/download/source.sh)
+#   . <(curl -fsSL https://github.com/rn-forge/rn-forge-shkit/releases/latest/download/source.sh)
 #
 # or vendor this file next to your script and source it directly. Sources the
 # installed bundle when present; otherwise downloads install.sh and runs it
@@ -14,6 +14,7 @@
 #   RNF_VERSION      Pin a release (e.g. 0.2.0); sources ${RNF_HOME}/shkit/v<version>.
 #   RNF_UPDATE_URL   Override the tarball download URL entirely (passed through to install.sh).
 #   RNF_INSTALL_URL  Override the install.sh download URL itself.
+#   RNF_GITHUB_ORG   GitHub org/user the release lives under. Default: rn-forge.
 #
 # Safe under `set -eu` in the consuming script.
 
@@ -23,6 +24,7 @@
 # function-local variables, so the bundle's constants would vanish on return.
 _rnf_source_prepare() {
   local home="${RNF_HOME:-${HOME}/.rn-forge}"
+  local org="${RNF_GITHUB_ORG:-rn-forge}"
   local dist="${home}/shkit/current"
 
   if [ -n "${RNF_VERSION:-}" ]; then
@@ -36,7 +38,7 @@ _rnf_source_prepare() {
     fi
     local tmp install_url
     tmp="$(mktemp -d)" || return 1
-    install_url="${RNF_INSTALL_URL:-https://github.com/rohitnarayanan/rn-forge-shkit/releases/latest/download/install.sh}"
+    install_url="${RNF_INSTALL_URL:-https://github.com/${org}/rn-forge-shkit/releases/latest/download/install.sh}"
     if ! curl -fsSL "$install_url" -o "${tmp}/install.sh"; then
       printf 'rn-forge-shkit source: download failed: %s\n' "$install_url" >&2
       rm -rf "$tmp"
@@ -45,7 +47,7 @@ _rnf_source_prepare() {
     # Forward explicitly — RNF_VERSION/RNF_UPDATE_URL may be plain (unexported)
     # shell variables here, and a child process only inherits exported ones.
     if ! RNF_HOME="$home" RNF_VERSION="${RNF_VERSION:-}" RNF_UPDATE_URL="${RNF_UPDATE_URL:-}" \
-      bash "${tmp}/install.sh"; then
+      RNF_GITHUB_ORG="${org}" bash "${tmp}/install.sh"; then
       printf 'rn-forge-shkit source: install failed\n' >&2
       rm -rf "$tmp"
       return 1
