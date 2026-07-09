@@ -29,8 +29,8 @@ Builds the distribution from source and installs it versioned under `~/.rn-forge
 ~/.rn-forge/
   bin/rnfshk -> ../shkit/current/rnfshk.sh
   shkit/
-    current -> v0.2.0
-    v0.2.0/{rn-forge-shkit.sh, rnfshk.sh, install.sh, commands/, VERSION}
+    current -> v<X.Y.Z>
+    v<X.Y.Z>/{rn-forge-shkit.sh, rn-forge-shkit.sh.map, rnfshk.sh, install.sh, commands/, VERSION}
 ```
 
 **Without cloning** — install the latest release directly:
@@ -134,6 +134,7 @@ Config vars (also honored by `rnfshk update`):
 | `RNF_VERSION` | Pin a release (e.g. `0.2.0`) for reproducible runs — sources `shkit/v<version>/` |
 | `RNF_UPDATE_URL` | Override the tarball download URL entirely |
 | `RNF_INSTALL_URL` | `source.sh` only — override the `install.sh` download URL itself |
+| `RNF_GITHUB_ORG` | GitHub org/user for release downloads. Default: `rn-forge` |
 
 ## Logging
 
@@ -171,11 +172,12 @@ Additional prerequisites (not managed by mise):
 
 - [shellspec](https://shellspec.info/) — required for `mise run test`
 - [gawk](https://www.gnu.org/software/gawk/) — required for `mise run docs`
+- [kcov](https://simonkagstrom.github.io/kcov/) — required for `mise run coverage` / `mise run verify`
 
 ```sh
 mise run format        # shfmt -w (in-place)
 mise run format-check  # shfmt -d (diff only, exits non-zero if dirty)
-mise run lint          # shellcheck
+mise run lint          # shellcheck src/ scripts/ examples/
 mise run test          # shellspec under the default shell (bash)
 mise run test-bash     # shellspec under bash
 mise run test-zsh      # shellspec under zsh

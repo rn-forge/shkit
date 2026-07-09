@@ -10,7 +10,6 @@
 
 set -eo pipefail
 
-SELF_PATH="$(readlink -f "$0")"
-SRC_ROOT="$(dirname "$(dirname "${SELF_PATH}")")"
+SRC_ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
 
 exec "${SRC_ROOT}/install.sh" --update

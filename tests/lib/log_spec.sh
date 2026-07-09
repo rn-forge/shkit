@@ -125,6 +125,14 @@ When call log_info "$(printf 'first\nsecond')"
 The error should include 'first'
 The contents of file "$logfile" should include 'first\nsecond'
 End
+
+It 'keeps logging usable when RNF_LOG_FILE cannot be written'
+RNF_LOG_FILE="/tmp/rnf-log-spec-missing-dir-$$/log"
+When call log_info 'write failure'
+The status should equal 0
+The error should include 'write failure'
+The error should include 'disabling RNF_LOG_FILE'
+End
 End
 
 Describe 'log_divider'

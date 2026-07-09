@@ -11,6 +11,8 @@ make_dist() {
   cat >"${1}/rn-forge-shkit.sh" <<EOF
 _RNF_VERSION="${2} (test)"
 log_verbose() { :; }
+log_info() { :; }
+log_warning() { :; }
 log_success() { printf 'SUCCESS: %s\n' "\$*" >&2; }
 rnf_marker() { printf 'marker %s\n' "\$_RNF_VERSION"; }
 EOF
@@ -102,5 +104,12 @@ RNF_VERSION="3.0.0"
 When call source_kit
 The status should equal 1
 The error should include 'missing after install'
+End
+
+It 'rejects an invalid pinned version before constructing a path'
+RNF_VERSION="../bad"
+When call source_kit
+The status should equal 1
+The error should include 'invalid RNF_VERSION'
 End
 End

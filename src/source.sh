@@ -28,6 +28,10 @@ _rnf_source_prepare() {
   local dist="${home}/shkit/current"
 
   if [ -n "${RNF_VERSION:-}" ]; then
+    if ! printf '%s\n' "$RNF_VERSION" | grep -Eq '^[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*([-+][A-Za-z0-9][A-Za-z0-9._-]*)?$'; then
+      printf 'rn-forge-shkit source: invalid RNF_VERSION: %s\n' "$RNF_VERSION" >&2
+      return 1
+    fi
     dist="${home}/shkit/v${RNF_VERSION}"
   fi
 

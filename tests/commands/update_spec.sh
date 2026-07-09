@@ -10,6 +10,8 @@ make_dist() {
   cat >"${1}/rn-forge-shkit.sh" <<EOF
 _RNF_VERSION="${2} (test)"
 log_verbose() { :; }
+log_info() { :; }
+log_warning() { :; }
 log_success() { printf 'SUCCESS: %s\n' "\$*" >&2; }
 EOF
   printf '%s\n' "$2" >"${1}/VERSION"

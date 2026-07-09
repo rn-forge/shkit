@@ -87,8 +87,11 @@ _log() {
     local escaped_msg ctx=""
     escaped_msg="$(printf '%s' "$msg" | awk '{gsub(/\\/, "\\\\"); gsub(/"/, "\\\""); gsub(/\r/, "\\r"); if (NR > 1) printf "\\n"; printf "%s", $0}')"
     [ -n "${RNF_LOG_CONTEXT:-}" ] && ctx=" ${RNF_LOG_CONTEXT}"
-    printf 'time=%s level=%s pid=%d%s msg="%s"\n' \
-      "$ts" "$level" "$$" "$ctx" "$escaped_msg" >>"$RNF_LOG_FILE"
+    if ! printf 'time=%s level=%s pid=%d%s msg="%s"\n' \
+      "$ts" "$level" "$$" "$ctx" "$escaped_msg" >>"$RNF_LOG_FILE"; then
+      printf '%s [WARNING ] disabling RNF_LOG_FILE after write failed: %s\n' "$ts" "$RNF_LOG_FILE" >&2
+      RNF_LOG_FILE=""
+    fi
   fi
 }
 

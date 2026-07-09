@@ -30,6 +30,18 @@ set -eo pipefail
 
 RNF_HOME="${RNF_HOME:-${HOME}/.rn-forge}"
 RNF_GITHUB_ORG="${RNF_GITHUB_ORG:-rn-forge}"
+RNF_INSTALL_LOCK_TIMEOUT="${RNF_INSTALL_LOCK_TIMEOUT:-30}"
+RNF_VERSION_PATTERN='^[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*([-+][A-Za-z0-9][A-Za-z0-9._-]*)?$'
+
+if [ -n "${RNF_VERSION:-}" ] && [[ ! "$RNF_VERSION" =~ $RNF_VERSION_PATTERN ]]; then
+  echo "install.sh: invalid RNF_VERSION '${RNF_VERSION}'" >&2
+  exit 1
+fi
+
+if ! printf '%s\n' "$RNF_INSTALL_LOCK_TIMEOUT" | grep -Eq '^[0-9][0-9]*$'; then
+  echo "install.sh: invalid RNF_INSTALL_LOCK_TIMEOUT '${RNF_INSTALL_LOCK_TIMEOUT}'" >&2
+  exit 1
+fi
 
 FORCE_FETCH=0
 if [ "${1:-}" = "--update" ]; then
@@ -38,7 +50,7 @@ fi
 
 SRC_ROOT=""
 if [ -f "$0" ]; then
-  SRC_ROOT="$(dirname "$(readlink -f "$0")")"
+  SRC_ROOT="$(cd "$(dirname "$0")" && pwd -P)"
 fi
 
 # Prints the sha256 of $1 — sha256sum on Linux, shasum on macOS.
@@ -50,8 +62,22 @@ sha256_of() {
   fi
 }
 
+read_dist_version() {
+  local version_file="$1" version
+  version="$(cat "$version_file")"
+  if [[ ! "$version" =~ $RNF_VERSION_PATTERN ]]; then
+    echo "install.sh: invalid VERSION '${version}' in ${version_file}" >&2
+    exit 1
+  fi
+  printf '%s\n' "$version"
+}
+
 # Downloads the release tarball and re-runs the install.sh it contains.
 # Used when this script has no sibling dist tree — i.e. curled standalone.
+#
+# Uses plain `echo ... >&2` rather than log_* throughout: the bundle (which
+# defines log_*) isn't sourced until the direct-install path below runs, and
+# that only happens on the re-exec of the extracted install.sh, not here.
 fetch_and_install() {
   if ! command -v curl >/dev/null 2>&1; then
     echo "install.sh: curl is required" >&2
@@ -75,6 +101,10 @@ fetch_and_install() {
     exit 1
   fi
 
+  # 2>/dev/null here means a missing .sha256 (expected for older releases)
+  # and a network failure fetching it both fall through to "skipping
+  # verification" below — the tarball download above already proved network
+  # access works, so this is treated as best-effort, not required.
   if curl -fsSL "${url}.sha256" -o "${tmp}/rn-forge-shkit.tar.gz.sha256" 2>/dev/null; then
     local expected actual
     expected="$(awk '{print $1}' "${tmp}/rn-forge-shkit.tar.gz.sha256")"
@@ -94,10 +124,10 @@ fetch_and_install() {
   fi
 
   local new_version current_version
-  new_version="v$(cat "${tmp}/VERSION")"
+  new_version="v$(read_dist_version "${tmp}/VERSION")"
   current_version=""
   if [ -f "${RNF_HOME}/shkit/current/VERSION" ]; then
-    current_version="v$(cat "${RNF_HOME}/shkit/current/VERSION")"
+    current_version="v$(read_dist_version "${RNF_HOME}/shkit/current/VERSION")"
   fi
   if [ "${new_version}" = "${current_version}" ]; then
     echo "install.sh: already up to date: ${current_version}" >&2
@@ -116,30 +146,27 @@ fi
 # Source the bundle being installed for log_* helpers.
 . "${SRC_ROOT}/rn-forge-shkit.sh"
 
-DIST_VERSION="v$(cat "${SRC_ROOT}/VERSION")"
+DIST_VERSION="v$(read_dist_version "${SRC_ROOT}/VERSION")"
 PRODUCT_HOME="${RNF_HOME}/shkit"
 DIST_PATH="${PRODUCT_HOME}/${DIST_VERSION}"
 LOCK_DIR="${PRODUCT_HOME}/.install.lock"
 
 # Serializes concurrent installs (e.g. parallel CI jobs on a shared, cached
 # $RNF_HOME) via a mkdir-based lock — portable across macOS/Linux, unlike
-# flock. Breaks a stale lock after one timeout rather than deadlocking
-# forever on a crashed prior run.
+# flock. Fails after a bounded wait rather than deleting an unknown lock and
+# racing an active slow install.
 #
 # LOCK_DIR is a script-global, not a local — the release trap fires at
 # script EXIT, after this function has already returned and any local
 # would be out of scope (silently expanding to empty, making `rm -rf`
 # a no-op and leaking the lock).
 acquire_install_lock() {
-  local waited=0 broke_stale=0
+  local waited=0
   while ! mkdir "${LOCK_DIR}" 2>/dev/null; do
-    if [ "$waited" -ge 30 ]; then
-      if [ "$broke_stale" -eq 0 ]; then
-        log_verbose "Breaking stale install lock ${LOCK_DIR} ..."
-        rm -rf "${LOCK_DIR}"
-        broke_stale=1
-        continue
-      fi
+    if [ "$waited" -eq 0 ]; then
+      log_info "Waiting for install lock ${LOCK_DIR} (held by another install) ..."
+    fi
+    if [ "$waited" -ge "$RNF_INSTALL_LOCK_TIMEOUT" ]; then
       echo "install.sh: could not acquire install lock ${LOCK_DIR}" >&2
       exit 1
     fi
@@ -150,23 +177,27 @@ acquire_install_lock() {
 }
 
 install_dist() {
-  log_verbose "Installing distribution ${DIST_VERSION} ..."
+  log_info "Installing distribution ${DIST_VERSION} ..."
   mkdir -p "${RNF_HOME}/bin" "${PRODUCT_HOME}"
   acquire_install_lock
 
   # canonicalize before comparing — SRC_ROOT is fully resolved, DIST_PATH may not be
-  if [ "${SRC_ROOT}" != "$(readlink -f "${DIST_PATH}" 2>/dev/null || true)" ]; then
+  if [ "${SRC_ROOT}" != "$(cd "${DIST_PATH}" 2>/dev/null && pwd -P)" ]; then
     # Build the new version in a scratch dir first, then swap it into place
     # with rm+mv (fast, same-filesystem) instead of rm-then-cp-in-place — a
     # failed cp only ever leaves the scratch dir broken, never DIST_PATH.
+    log_info "Copying ${DIST_VERSION} into ${DIST_PATH} ..."
     local tmp_dist="${PRODUCT_HOME}/.tmp-${DIST_VERSION}-$$"
     rm -rf "${tmp_dist}"
     mkdir -p "${tmp_dist}"
     cp -R "${SRC_ROOT}/." "${tmp_dist}/"
     rm -rf "${DIST_PATH}"
     mv "${tmp_dist}" "${DIST_PATH}"
+  else
+    log_info "${DIST_PATH} already holds ${DIST_VERSION}, skipping copy"
   fi
 
+  log_info "Linking ${PRODUCT_HOME}/current -> ${DIST_VERSION} and ${RNF_HOME}/bin/rnfshk"
   ln -sfn "${DIST_VERSION}" "${PRODUCT_HOME}/current"
   ln -sfn "../shkit/current/rnfshk.sh" "${RNF_HOME}/bin/rnfshk"
 }
@@ -174,7 +205,7 @@ install_dist() {
 migrate_legacy() {
   # one-time cleanup of the pre-0.2.0 single-file install
   if [ -f "${RNF_HOME}/rn-forge.sh" ] && [ ! -L "${RNF_HOME}/rn-forge.sh" ]; then
-    log_verbose "Removing legacy ${RNF_HOME}/rn-forge.sh ..."
+    log_info "Removing legacy ${RNF_HOME}/rn-forge.sh ..."
     rm -f "${RNF_HOME}/rn-forge.sh"
   fi
 }
