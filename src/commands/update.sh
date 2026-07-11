@@ -1,6 +1,6 @@
 #!/bin/bash
 # shellcheck shell=bash
-# Fetches and installs a newer rn-forge-shkit release (or RNF_VERSION pin).
+# Fetches and installs a newer shkit release (or RNF_VERSION pin).
 # Delegates to the sibling install.sh with --update, which forces the fetch
 # even though this installed copy already has sibling dist files.
 #
@@ -10,7 +10,6 @@
 
 set -eo pipefail
 
-SELF_PATH="$(readlink -f "$0")"
-SRC_ROOT="$(dirname "$(dirname "${SELF_PATH}")")"
+SRC_ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
 
 exec "${SRC_ROOT}/install.sh" --update

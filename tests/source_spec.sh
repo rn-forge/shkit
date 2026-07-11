@@ -8,9 +8,11 @@ Describe 'source.sh'
 # from a sibling commands/ directory).
 make_dist() {
   mkdir -p "${1}/commands"
-  cat >"${1}/rn-forge-shkit.sh" <<EOF
+  cat >"${1}/shkit.sh" <<EOF
 _RNF_VERSION="${2} (test)"
 log_verbose() { :; }
+log_info() { :; }
+log_warning() { :; }
 log_success() { printf 'SUCCESS: %s\n' "\$*" >&2; }
 rnf_marker() { printf 'marker %s\n' "\$_RNF_VERSION"; }
 EOF
@@ -22,7 +24,7 @@ EOF
 
 make_tarball() {
   make_dist "${tmpdir}/remote" "$1"
-  tar -czf "${tmpdir}/rn-forge-shkit.tar.gz" -C "${tmpdir}/remote" .
+  tar -czf "${tmpdir}/shkit.tar.gz" -C "${tmpdir}/remote" .
 }
 
 install_fake() {
@@ -39,7 +41,7 @@ setup() {
   # shellcheck disable=SC2034  # consumed by source.sh
   RNF_INSTALL_URL="file://${tmpdir}/install.sh"
   # shellcheck disable=SC2034  # consumed by install.sh
-  RNF_UPDATE_URL="file://${tmpdir}/rn-forge-shkit.tar.gz"
+  RNF_UPDATE_URL="file://${tmpdir}/shkit.tar.gz"
 }
 cleanup() { rm -rf "$tmpdir"; }
 Before setup
@@ -61,7 +63,7 @@ make_tarball "2.0.0"
 When call source_kit
 The output should equal 'marker 2.0.0 (test)'
 The error should include 'installed (current -> v2.0.0)'
-The file "${RNF_HOME}/shkit/v2.0.0/rn-forge-shkit.sh" should be exist
+The file "${RNF_HOME}/shkit/v2.0.0/shkit.sh" should be exist
 End
 
 It 'fails when the download fails'
@@ -71,11 +73,11 @@ The status should equal 1
 The error should include 'download failed'
 End
 
-It 'rejects a download that is not an rn-forge-shkit dist'
-printf 'not a tarball\n' >"${tmpdir}/rn-forge-shkit.tar.gz"
+It 'rejects a download that is not a shkit dist'
+printf 'not a tarball\n' >"${tmpdir}/shkit.tar.gz"
 When call source_kit
 The status should equal 1
-The error should include 'not an rn-forge-shkit dist'
+The error should include 'not a shkit dist'
 End
 
 It 'reuses a matching pinned version without downloading'
@@ -93,7 +95,7 @@ RNF_VERSION="2.0.0"
 When call source_kit
 The output should equal 'marker 2.0.0 (test)'
 The error should include 'installed (current -> v2.0.0)'
-The file "${RNF_HOME}/shkit/v2.0.0/rn-forge-shkit.sh" should be exist
+The file "${RNF_HOME}/shkit/v2.0.0/shkit.sh" should be exist
 End
 
 It 'fails when the pinned version does not match the download'
@@ -102,5 +104,12 @@ RNF_VERSION="3.0.0"
 When call source_kit
 The status should equal 1
 The error should include 'missing after install'
+End
+
+It 'rejects an invalid pinned version before constructing a path'
+RNF_VERSION="../bad"
+When call source_kit
+The status should equal 1
+The error should include 'invalid RNF_VERSION'
 End
 End

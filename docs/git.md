@@ -21,7 +21,7 @@ Safe to source multiple times (guarded by _RNF_GIT_LOADED).
 
 * [git_current_branch](#git_current_branch)
 * [git_branch_list](#git_branch_list)
-* [git_checkout](#git_checkout)
+* [git_branch_create](#git_branch_create)
 * [git_switch](#git_switch)
 * [git_commit](#git_commit)
 * [git_merge](#git_merge)
@@ -48,7 +48,7 @@ List local branches, or remote-tracking branches when called with 'remote'.
 
 * **0**: Always.
 
-### git_checkout
+### git_branch_create
 
 Create and check out a new branch. Fails if the branch already exists.
 

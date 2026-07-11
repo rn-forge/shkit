@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
 
 ## What this is
 
@@ -32,7 +32,7 @@ Run a single spec file:
 shellspec tests/lib/core_spec.sh
 ```
 
-**CI** (`.github/workflows/main.yml`) runs two verify jobs ahead of `publish`: `verify` (`ubuntu-latest`, the full `mise run verify` pipeline including coverage) and `verify-zsh` (`macos-latest`, `mise run test-zsh` only — zsh needs no install there since it's macOS's default shell). `verify-zsh` is optional: set the repo variable `RUN_ZSH_VERIFY` to `false` to skip it without editing the workflow. A skip doesn't block `publish`; an actual zsh test failure does.
+**CI** (`.github/workflows/main.yml`) runs two verify jobs ahead of `publish`: `verify` (`ubuntu-22.04`, the full `mise run verify` pipeline including coverage) and `verify-zsh` (`macos-latest`, `mise run test-zsh` only — zsh needs no install there since it's macOS's default shell). `verify-zsh` is optional: set the repo variable `RUN_ZSH_VERIFY` to `false` to skip it without editing the workflow. A skip doesn't block `publish`; an actual zsh test failure does.
 
 ## Architecture
 
@@ -48,7 +48,7 @@ Each module is guarded by a `_RNF_<MODULE>_LOADED` variable so sourcing multiple
 
 ### Build pipeline
 
-`scripts/build.sh` concatenates all modules (in dependency order), strips shdoc comment blocks (`# @tag` lines), and emits a `#!/bin/sh` bundle plus a `.map` line-range file for tracing bundle lines back to source. It stages the full dist tree at `dist/shkit/` (`shkit.sh`, `shkit.sh.map`, `rnfshk.sh`, `install.sh`, `commands/`, `VERSION`), tars it to `dist/shkit.tar.gz`, and copies loose release assets (`shkit.sh`, `.map`, `source.sh`, `install.sh`) into `dist/`.
+`scripts/build.sh` concatenates all modules (in dependency order), strips shdoc comment blocks (`# @tag` lines), and emits a `#!/bin/sh` bundle plus a `.map` line-range file for tracing bundle lines back to source. It stages the full dist tree at `dist/shkit/` (`shkit.sh`, `shkit.sh.map`, `rnfshk.sh`, `install.sh`, `commands/`, `VERSION`), tars it to `dist/shkit.tar.gz`, writes `dist/shkit.tar.gz.sha256`, and copies loose release assets (`shkit.sh`, `.map`, `source.sh`, `install.sh`) into `dist/`.
 
 ### Docs
 

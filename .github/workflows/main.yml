@@ -59,10 +59,10 @@ jobs:
         with:
           name: release-assets
           path: |
-            dist/rn-forge-shkit.sh
-            dist/rn-forge-shkit.sh.map
-            dist/rn-forge-shkit.tar.gz
-            dist/rn-forge-shkit.tar.gz.sha256
+            dist/shkit.sh
+            dist/shkit.sh.map
+            dist/shkit.tar.gz
+            dist/shkit.tar.gz.sha256
             dist/source.sh
             dist/install.sh
           retention-days: 7
@@ -144,9 +144,9 @@ jobs:
           tag_name: v${{ steps.read_version.outputs.version }}
           generate_release_notes: true
           files: |
-            dist/rn-forge-shkit.sh
-            dist/rn-forge-shkit.sh.map
-            dist/rn-forge-shkit.tar.gz
-            dist/rn-forge-shkit.tar.gz.sha256
+            dist/shkit.sh
+            dist/shkit.sh.map
+            dist/shkit.tar.gz
+            dist/shkit.tar.gz.sha256
             dist/source.sh
             dist/install.sh

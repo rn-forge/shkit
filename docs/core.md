@@ -4,10 +4,10 @@ Core utility functions with no external dependencies.
 
 ## Overview
 
-Foundational helpers used by all other rn-forge-shkit modules:
+Foundational helpers used by all other shkit modules:
 indirect variable lookup, divider lines, timestamps, and config parsing.
 
-No dependencies on other rn-forge-shkit modules.
+No dependencies on other shkit modules.
 Safe to source multiple times (guarded by _RNF_CORE_LOADED).
 
 ## Index
@@ -95,7 +95,7 @@ _Function has no arguments._
 
 ### rnf_version
 
-Print the rn-forge-shkit build version.
+Print the shkit build version.
 In the bundled dist/rn-forge.sh, this reflects the VERSION and commit
 baked in at build time (see scripts/build.sh). When sourcing modules
 directly from src/lib (no build step), reports "dev".

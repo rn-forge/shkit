@@ -1,4 +1,4 @@
-# rn-forge-shkit
+# shkit
 
 A bash/zsh library of reusable shell utilities. Source individual modules or the single-file bundle, and manage the installation with the `rnfshk` command.
 
@@ -29,14 +29,14 @@ Builds the distribution from source and installs it versioned under `~/.rn-forge
 ~/.rn-forge/
   bin/rnfshk -> ../shkit/current/rnfshk.sh
   shkit/
-    current -> v0.2.0
-    v0.2.0/{rn-forge-shkit.sh, rnfshk.sh, install.sh, commands/, VERSION}
+    current -> v<X.Y.Z>
+    v<X.Y.Z>/{shkit.sh, shkit.sh.map, rnfshk.sh, install.sh, commands/, VERSION}
 ```
 
 **Without cloning** — install the latest release directly:
 
 ```sh
-curl -fsSL https://github.com/rn-forge/rn-forge-shkit/releases/latest/download/install.sh | bash
+curl -fsSL https://github.com/rn-forge/shkit/releases/latest/download/install.sh | bash
 ```
 
 Downloads the release tarball and installs it into the same versioned layout as `mise run install`. From then on, use `rnfshk update` to move to a newer release — there's no separate `rnfshk install`; `install.sh` is only for the first install on a machine (or vendored/curled by `source.sh` and `update` under the hood).
@@ -45,7 +45,7 @@ Either way, add to your shell RC to activate:
 
 ```sh
 export PATH="$HOME/.rn-forge/bin:$PATH"
-source "$HOME/.rn-forge/shkit/current/rn-forge-shkit.sh"
+source "$HOME/.rn-forge/shkit/current/shkit.sh"
 ```
 
 ## Usage
@@ -59,7 +59,7 @@ There are two ways to source the library: from a local installation, or straight
 ```sh
 # Use in your shell RC, or in scripts on any machine where the library is
 # already installed (dev laptop, provisioned server).
-. ~/.rn-forge/shkit/current/rn-forge-shkit.sh
+. ~/.rn-forge/shkit/current/shkit.sh
 log_info "deploying..."
 log_success "done"
 ```
@@ -69,9 +69,9 @@ log_success "done"
 > Run `mise run build` first to generate the bundle.
 
 ```sh
-# Use while developing rn-forge-shkit itself, to exercise the built bundle
+# Use while developing shkit itself, to exercise the built bundle
 # without installing it.
-. /path/to/rn-forge-shkit/dist/shkit/rn-forge-shkit.sh
+. /path/to/shkit/dist/shkit/shkit.sh
 ```
 
 **Individual modules:**
@@ -81,9 +81,9 @@ log_success "done"
 ```sh
 # Use when you only need a subset of the library and want to avoid pulling
 # in the full bundle.
-. /path/to/rn-forge-shkit/src/lib/console.sh
-. /path/to/rn-forge-shkit/src/lib/log.sh
-. /path/to/rn-forge-shkit/src/lib/print.sh
+. /path/to/shkit/src/lib/console.sh
+. /path/to/shkit/src/lib/log.sh
+. /path/to/shkit/src/lib/print.sh
 ```
 
 ### Source from a remote distribution
@@ -98,7 +98,7 @@ No local install required — both options fetch from GitHub releases at source 
 # workspaces, cron jobs, provisioning scripts run more than once). Installs
 # on first run (needs network), sources the installed bundle on every run
 # after (no network), and leaves rnfshk/RNF_VERSION management in place.
-. <(curl -fsSL https://github.com/rn-forge/rn-forge-shkit/releases/latest/download/source.sh)
+. <(curl -fsSL https://github.com/rn-forge/shkit/releases/latest/download/source.sh)
 log_info "works locally and on a fresh VM"
 ```
 
@@ -120,7 +120,7 @@ Or vendor `dist/source.sh` next to your script and source it directly — no net
 # down, 404) would source an empty stream and silently continue with none
 # of the library loaded instead of failing.
 _rnf_tmp="$(mktemp)" &&
-  curl -fsSL https://github.com/rn-forge/rn-forge-shkit/releases/latest/download/rn-forge-shkit.sh -o "$_rnf_tmp" &&
+  curl -fsSL https://github.com/rn-forge/shkit/releases/latest/download/shkit.sh -o "$_rnf_tmp" &&
   . "$_rnf_tmp" && rm -f "$_rnf_tmp"
 ```
 
@@ -134,6 +134,7 @@ Config vars (also honored by `rnfshk update`):
 | `RNF_VERSION` | Pin a release (e.g. `0.2.0`) for reproducible runs — sources `shkit/v<version>/` |
 | `RNF_UPDATE_URL` | Override the tarball download URL entirely |
 | `RNF_INSTALL_URL` | `source.sh` only — override the `install.sh` download URL itself |
+| `RNF_GITHUB_ORG` | GitHub org/user for release downloads. Default: `rn-forge` |
 
 ## Logging
 
@@ -171,11 +172,12 @@ Additional prerequisites (not managed by mise):
 
 - [shellspec](https://shellspec.info/) — required for `mise run test`
 - [gawk](https://www.gnu.org/software/gawk/) — required for `mise run docs`
+- [kcov](https://simonkagstrom.github.io/kcov/) — required for `mise run coverage` / `mise run verify`
 
 ```sh
 mise run format        # shfmt -w (in-place)
 mise run format-check  # shfmt -d (diff only, exits non-zero if dirty)
-mise run lint          # shellcheck
+mise run lint          # shellcheck src/ scripts/ examples/
 mise run test          # shellspec under the default shell (bash)
 mise run test-bash     # shellspec under bash
 mise run test-zsh      # shellspec under zsh

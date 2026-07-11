@@ -1,6 +1,6 @@
 #!/bin/bash
 # shellcheck shell=bash
-# rn-forge-shkit command dispatcher: `rnfshk <sub-command> [args ...]` runs
+# shkit command dispatcher: `rnfshk <sub-command> [args ...]` runs
 # commands/<sub_command>.sh from the installed dist (resolved through the
 # ~/.rn-forge/bin/rnfshk -> shkit/current symlinks).
 

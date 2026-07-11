@@ -11,7 +11,7 @@
 #
 #   RNF_NO_COLOR=1 suppresses ANSI output globally across all modules.
 #
-#   No dependencies on other rn-forge-shkit modules.
+#   No dependencies on other shkit modules.
 #   Safe to source multiple times (guarded by _RNF_CONSOLE_LOADED).
 
 # shellcheck shell=bash
