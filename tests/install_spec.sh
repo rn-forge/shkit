@@ -5,7 +5,7 @@ Describe 'install.sh'
 # Stage a dist tree (install.sh sources its sibling bundle for log_* helpers).
 make_dist() {
   mkdir -p "${1}/commands"
-  cat >"${1}/rn-forge-shkit.sh" <<EOF
+  cat >"${1}/shkit.sh" <<EOF
 _RNF_VERSION="${2} (test)"
 log_verbose() { :; }
 log_info() { :; }
@@ -20,7 +20,7 @@ EOF
 
 make_tarball() {
   make_dist "${tmpdir}/remote" "$1"
-  tar -czf "${tmpdir}/rn-forge-shkit.tar.gz" -C "${tmpdir}/remote" .
+  tar -czf "${tmpdir}/shkit.tar.gz" -C "${tmpdir}/remote" .
 }
 
 sha256_of() {
@@ -66,7 +66,7 @@ It 'installs the dist tree versioned with current and bin symlinks'
 When run script "${tmpdir}/dist/install.sh"
 The status should equal 0
 The error should include 'installed (current -> v1.0.0)'
-The file "${RNF_HOME}/shkit/v1.0.0/rn-forge-shkit.sh" should be exist
+The file "${RNF_HOME}/shkit/v1.0.0/shkit.sh" should be exist
 Assert current_points_to v1.0.0
 Assert rnfshk_link_resolves_to v1.0.0
 End
@@ -78,8 +78,8 @@ When run script "${tmpdir}/dist2/install.sh"
 The status should equal 0
 The error should include 'installed (current -> v2.0.0)'
 Assert current_points_to v2.0.0
-The file "${RNF_HOME}/shkit/v1.0.0/rn-forge-shkit.sh" should be exist
-The file "${RNF_HOME}/shkit/v2.0.0/rn-forge-shkit.sh" should be exist
+The file "${RNF_HOME}/shkit/v1.0.0/shkit.sh" should be exist
+The file "${RNF_HOME}/shkit/v2.0.0/shkit.sh" should be exist
 End
 
 It 'reinstalls from the installed copy without deleting it'
@@ -87,7 +87,7 @@ bash "${tmpdir}/dist/install.sh" 2>/dev/null
 When run script "${RNF_HOME}/shkit/current/install.sh"
 The status should equal 0
 The error should include 'installed (current -> v1.0.0)'
-The file "${RNF_HOME}/shkit/v1.0.0/rn-forge-shkit.sh" should be exist
+The file "${RNF_HOME}/shkit/v1.0.0/shkit.sh" should be exist
 Assert current_points_to v1.0.0
 End
 
@@ -111,7 +111,7 @@ When call concurrent_install
 The status should equal 0
 The directory "${RNF_HOME}/shkit/.install.lock" should not be exist
 Assert current_points_to v1.0.0
-The file "${RNF_HOME}/shkit/v1.0.0/rn-forge-shkit.sh" should be exist
+The file "${RNF_HOME}/shkit/v1.0.0/shkit.sh" should be exist
 End
 
 It 'fails instead of breaking an install lock it cannot acquire'
@@ -140,7 +140,7 @@ setup_standalone() {
   cp src/install.sh "${standalone_dir}/install.sh"
   chmod +x "${standalone_dir}/install.sh"
   # shellcheck disable=SC2034  # consumed by install.sh
-  RNF_UPDATE_URL="file://${tmpdir}/rn-forge-shkit.tar.gz"
+  RNF_UPDATE_URL="file://${tmpdir}/shkit.tar.gz"
   export RNF_UPDATE_URL
 }
 Before setup_standalone
@@ -152,13 +152,13 @@ The status should equal 0
 The error should include 'downloading'
 The error should include 'no checksum found'
 The error should include 'installed (current -> v1.0.0)'
-The file "${RNF_HOME}/shkit/v1.0.0/rn-forge-shkit.sh" should be exist
+The file "${RNF_HOME}/shkit/v1.0.0/shkit.sh" should be exist
 Assert current_points_to v1.0.0
 End
 
 It 'verifies a matching checksum before installing'
 make_tarball "1.0.0"
-sha256_of "${tmpdir}/rn-forge-shkit.tar.gz" >"${tmpdir}/rn-forge-shkit.tar.gz.sha256"
+sha256_of "${tmpdir}/shkit.tar.gz" >"${tmpdir}/shkit.tar.gz.sha256"
 When run script "${standalone_dir}/install.sh"
 The status should equal 0
 The error should not include 'checksum mismatch'
@@ -169,11 +169,11 @@ End
 
 It 'rejects a tarball with a mismatched checksum'
 make_tarball "1.0.0"
-printf '%s\n' '0000000000000000000000000000000000000000000000000000000000000000' >"${tmpdir}/rn-forge-shkit.tar.gz.sha256"
+printf '%s\n' '0000000000000000000000000000000000000000000000000000000000000000' >"${tmpdir}/shkit.tar.gz.sha256"
 When run script "${standalone_dir}/install.sh"
 The status should equal 1
 The error should include 'checksum mismatch'
-The file "${RNF_HOME}/shkit/v1.0.0/rn-forge-shkit.sh" should not be exist
+The file "${RNF_HOME}/shkit/v1.0.0/shkit.sh" should not be exist
 End
 
 It 'is a no-op when the downloaded version matches the installed one'
@@ -201,11 +201,11 @@ The status should equal 1
 The error should include 'invalid RNF_VERSION'
 End
 
-It 'rejects a download that is not an rn-forge-shkit dist'
-printf 'not a tarball\n' >"${tmpdir}/rn-forge-shkit.tar.gz"
+It 'rejects a download that is not a shkit dist'
+printf 'not a tarball\n' >"${tmpdir}/shkit.tar.gz"
 When run script "${standalone_dir}/install.sh"
 The status should equal 1
-The error should include 'not an rn-forge-shkit dist'
+The error should include 'not a shkit dist'
 End
 
 It 'rejects a downloaded dist with an invalid VERSION'

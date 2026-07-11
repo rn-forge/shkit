@@ -49,10 +49,10 @@ git_branch_list() {
 # @arg $1 string Branch name.
 # @exitcode 0 Branch created and checked out.
 # @exitcode 1 Branch name missing or branch already exists.
-git_checkout() {
+git_branch_create() {
   local branch="$1"
   if [ -z "$branch" ]; then
-    log_error "git_checkout: branch name is required"
+    log_error "git_branch_create: branch name is required"
     return 1
   fi
   log_info "Creating branch: ${branch}"

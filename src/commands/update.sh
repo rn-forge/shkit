@@ -1,6 +1,6 @@
 #!/bin/bash
 # shellcheck shell=bash
-# Fetches and installs a newer rn-forge-shkit release (or RNF_VERSION pin).
+# Fetches and installs a newer shkit release (or RNF_VERSION pin).
 # Delegates to the sibling install.sh with --update, which forces the fetch
 # even though this installed copy already has sibling dist files.
 #

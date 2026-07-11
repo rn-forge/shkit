@@ -7,7 +7,7 @@
 Describe 'update.sh'
 make_dist() {
   mkdir -p "${1}/commands"
-  cat >"${1}/rn-forge-shkit.sh" <<EOF
+  cat >"${1}/shkit.sh" <<EOF
 _RNF_VERSION="${2} (test)"
 log_verbose() { :; }
 log_info() { :; }
@@ -23,7 +23,7 @@ EOF
 
 make_tarball() {
   make_dist "${tmpdir}/remote" "$1"
-  tar -czf "${tmpdir}/rn-forge-shkit.tar.gz" -C "${tmpdir}/remote" .
+  tar -czf "${tmpdir}/shkit.tar.gz" -C "${tmpdir}/remote" .
 }
 
 setup() {
@@ -34,7 +34,7 @@ setup() {
   make_dist "${RNF_HOME}/shkit/v1.0.0" "1.0.0"
   ln -s v1.0.0 "${RNF_HOME}/shkit/current"
   # shellcheck disable=SC2034  # consumed by install.sh
-  RNF_UPDATE_URL="file://${tmpdir}/rn-forge-shkit.tar.gz"
+  RNF_UPDATE_URL="file://${tmpdir}/shkit.tar.gz"
   export RNF_UPDATE_URL
 }
 cleanup() { rm -rf "$tmpdir"; }
@@ -49,8 +49,8 @@ When run script "${RNF_HOME}/shkit/current/commands/update.sh"
 The status should equal 0
 The error should include 'installed (current -> v2.0.0)'
 Assert current_points_to v2.0.0
-The file "${RNF_HOME}/shkit/v1.0.0/rn-forge-shkit.sh" should be exist
-The file "${RNF_HOME}/shkit/v2.0.0/rn-forge-shkit.sh" should be exist
+The file "${RNF_HOME}/shkit/v1.0.0/shkit.sh" should be exist
+The file "${RNF_HOME}/shkit/v2.0.0/shkit.sh" should be exist
 End
 
 It 'is a no-op when already at the downloaded version'

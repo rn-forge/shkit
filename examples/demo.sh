@@ -1,14 +1,14 @@
 #!/bin/bash
 # shellcheck shell=bash
-# Demonstrates the rn-forge-shkit library. Run after `mise run build`:
+# Demonstrates the shkit library. Run after `mise run build`:
 #   sh examples/demo.sh
 # Or source the bundle explicitly:
-#   RN_FORGE_BUNDLE=~/.rn-forge/shkit/current/rn-forge-shkit.sh sh examples/demo.sh
+#   RN_FORGE_BUNDLE=~/.rn-forge/shkit/current/shkit.sh sh examples/demo.sh
 
 set -eu
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-BUNDLE="${RN_FORGE_BUNDLE:-${REPO_ROOT}/dist/shkit/rn-forge-shkit.sh}"
+BUNDLE="${RN_FORGE_BUNDLE:-${REPO_ROOT}/dist/shkit/shkit.sh}"
 if [ ! -f "$BUNDLE" ]; then
   printf 'error: bundle not found at %s\n' "$BUNDLE" >&2
   printf 'Run: mise run build\n' >&2
@@ -20,7 +20,7 @@ fi
 # Banner
 # ---------------------------------------------------------------------------
 
-print_banner "rn-forge-shkit demo"
+print_banner "shkit demo"
 
 # ---------------------------------------------------------------------------
 # Logging

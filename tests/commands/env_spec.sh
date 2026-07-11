@@ -7,7 +7,7 @@
 Describe 'env.sh'
 make_dist() {
   mkdir -p "${1}/commands"
-  cat >"${1}/rn-forge-shkit.sh" <<EOF
+  cat >"${1}/shkit.sh" <<EOF
 _RNF_VERSION="${2} (test)"
 . "$(pwd)/src/lib/core.sh"
 EOF

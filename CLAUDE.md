@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-`rn-forge-shkit` is a bash/zsh shell library of reusable utilities. Sourced modules live in `src/lib/` and are concatenated into a single bundle; management tooling lives alongside them: `src/rnfshk.sh` (standalone `rnfshk` dispatcher bin), `src/commands/` (its subcommands: `update`, `version`, `env`), `src/install.sh` (standalone installer — curlable directly, or delegated to by `rnfshk update` and `source.sh`), and `src/source.sh` (streaming-sourcing entry point for app/CI environments).
+`shkit` is a bash/zsh shell library of reusable utilities. Sourced modules live in `src/lib/` and are concatenated into a single bundle; management tooling lives alongside them: `src/rnfshk.sh` (standalone `rnfshk` dispatcher bin), `src/commands/` (its subcommands: `update`, `version`, `env`), `src/install.sh` (standalone installer — curlable directly, or delegated to by `rnfshk update` and `source.sh`), and `src/source.sh` (streaming-sourcing entry point for app/CI environments).
 
 ## Commands
 
@@ -48,7 +48,7 @@ Each module is guarded by a `_RNF_<MODULE>_LOADED` variable so sourcing multiple
 
 ### Build pipeline
 
-`scripts/build.sh` concatenates all modules (in dependency order), strips shdoc comment blocks (`# @tag` lines), and emits a `#!/bin/sh` bundle plus a `.map` line-range file for tracing bundle lines back to source. It stages the full dist tree at `dist/shkit/` (`rn-forge-shkit.sh`, `rn-forge-shkit.sh.map`, `rnfshk.sh`, `install.sh`, `commands/`, `VERSION`), tars it to `dist/rn-forge-shkit.tar.gz`, and copies loose release assets (`rn-forge-shkit.sh`, `.map`, `source.sh`, `install.sh`) into `dist/`.
+`scripts/build.sh` concatenates all modules (in dependency order), strips shdoc comment blocks (`# @tag` lines), and emits a `#!/bin/sh` bundle plus a `.map` line-range file for tracing bundle lines back to source. It stages the full dist tree at `dist/shkit/` (`shkit.sh`, `shkit.sh.map`, `rnfshk.sh`, `install.sh`, `commands/`, `VERSION`), tars it to `dist/shkit.tar.gz`, and copies loose release assets (`shkit.sh`, `.map`, `source.sh`, `install.sh`) into `dist/`.
 
 ### Docs
 
@@ -56,14 +56,14 @@ Each module is guarded by a `_RNF_<MODULE>_LOADED` variable so sourcing multiple
 
 ### Install layout
 
-`src/install.sh` is self-detecting dual-mode: run next to an unpacked dist tree (sibling `rn-forge-shkit.sh` + `VERSION` present — inside `dist/shkit/`, an unpacked release tarball, or an installed `shkit/<version>/`), it installs that tree directly. Run standalone (curled fresh, no sibling files), it downloads the release tarball first (honoring `RNF_VERSION`/`RNF_UPDATE_URL`) and re-runs the extracted copy. Either way it installs versioned into `${RNF_HOME:-$HOME/.rn-forge}`:
+`src/install.sh` is self-detecting dual-mode: run next to an unpacked dist tree (sibling `shkit.sh` + `VERSION` present — inside `dist/shkit/`, an unpacked release tarball, or an installed `shkit/<version>/`), it installs that tree directly. Run standalone (curled fresh, no sibling files), it downloads the release tarball first (honoring `RNF_VERSION`/`RNF_UPDATE_URL`) and re-runs the extracted copy. Either way it installs versioned into `${RNF_HOME:-$HOME/.rn-forge}`:
 
 ```
 ~/.rn-forge/
   bin/rnfshk -> ../shkit/current/rnfshk.sh
   shkit/
     current -> v<X.Y.Z>          # ln -sfn symlink
-    v<X.Y.Z>/{rn-forge-shkit.sh, rn-forge-shkit.sh.map, rnfshk.sh, install.sh, commands/, VERSION}
+    v<X.Y.Z>/{shkit.sh, shkit.sh.map, rnfshk.sh, install.sh, commands/, VERSION}
 ```
 
 `rnfshk` resolves itself through those symlinks (`readlink -f`) and dispatches sub-commands to sibling `commands/<cmd>.sh`. `commands/update.sh` is a thin delegator — it just `exec`s the sibling `install.sh` (one directory up), inheriting `RNF_VERSION`/`RNF_UPDATE_URL` from the environment; there is no `commands/install.sh` and no `rnfshk install` sub-command. `src/source.sh` (shipped as the `source.sh` release asset) sources the installed bundle, downloading `install.sh` and running it first when missing.

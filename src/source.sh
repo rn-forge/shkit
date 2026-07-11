@@ -1,9 +1,9 @@
 #!/bin/bash
 # shellcheck shell=bash
-# Streams the rn-forge-shkit library into the current shell. Meant to be
+# Streams the shkit library into the current shell. Meant to be
 # sourced from consuming scripts (bash or zsh), not executed:
 #
-#   . <(curl -fsSL https://github.com/rn-forge/rn-forge-shkit/releases/latest/download/source.sh)
+#   . <(curl -fsSL https://github.com/rn-forge/shkit/releases/latest/download/source.sh)
 #
 # or vendor this file next to your script and source it directly. Sources the
 # installed bundle when present; otherwise downloads install.sh and runs it
@@ -29,22 +29,22 @@ _rnf_source_prepare() {
 
   if [ -n "${RNF_VERSION:-}" ]; then
     if ! printf '%s\n' "$RNF_VERSION" | grep -Eq '^[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*([-+][A-Za-z0-9][A-Za-z0-9._-]*)?$'; then
-      printf 'rn-forge-shkit source: invalid RNF_VERSION: %s\n' "$RNF_VERSION" >&2
+      printf 'shkit source: invalid RNF_VERSION: %s\n' "$RNF_VERSION" >&2
       return 1
     fi
     dist="${home}/shkit/v${RNF_VERSION}"
   fi
 
-  if [ ! -f "${dist}/rn-forge-shkit.sh" ]; then
+  if [ ! -f "${dist}/shkit.sh" ]; then
     if ! command -v curl >/dev/null 2>&1; then
-      printf 'rn-forge-shkit source: curl is required\n' >&2
+      printf 'shkit source: curl is required\n' >&2
       return 1
     fi
     local tmp install_url
     tmp="$(mktemp -d)" || return 1
-    install_url="${RNF_INSTALL_URL:-https://github.com/${org}/rn-forge-shkit/releases/latest/download/install.sh}"
+    install_url="${RNF_INSTALL_URL:-https://github.com/${org}/shkit/releases/latest/download/install.sh}"
     if ! curl -fsSL "$install_url" -o "${tmp}/install.sh"; then
-      printf 'rn-forge-shkit source: download failed: %s\n' "$install_url" >&2
+      printf 'shkit source: download failed: %s\n' "$install_url" >&2
       rm -rf "$tmp"
       return 1
     fi
@@ -52,18 +52,18 @@ _rnf_source_prepare() {
     # shell variables here, and a child process only inherits exported ones.
     if ! RNF_HOME="$home" RNF_VERSION="${RNF_VERSION:-}" RNF_UPDATE_URL="${RNF_UPDATE_URL:-}" \
       RNF_GITHUB_ORG="${org}" bash "${tmp}/install.sh"; then
-      printf 'rn-forge-shkit source: install failed\n' >&2
+      printf 'shkit source: install failed\n' >&2
       rm -rf "$tmp"
       return 1
     fi
     rm -rf "$tmp"
-    if [ ! -f "${dist}/rn-forge-shkit.sh" ]; then
-      printf 'rn-forge-shkit source: %s missing after install — does the pinned RNF_VERSION match the download?\n' "${dist}/rn-forge-shkit.sh" >&2
+    if [ ! -f "${dist}/shkit.sh" ]; then
+      printf 'shkit source: %s missing after install — does the pinned RNF_VERSION match the download?\n' "${dist}/shkit.sh" >&2
       return 1
     fi
   fi
 
-  printf '%s\n' "${dist}/rn-forge-shkit.sh"
+  printf '%s\n' "${dist}/shkit.sh"
 }
 
 if _RNF_SOURCE_BUNDLE="$(_rnf_source_prepare)"; then

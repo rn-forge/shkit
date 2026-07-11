@@ -1,16 +1,16 @@
 #!/bin/bash
 # shellcheck shell=bash
-# Installs (or updates) the rn-forge-shkit distribution into RNF_HOME with a
+# Installs (or updates) the shkit distribution into RNF_HOME with a
 # versioned layout:
 #   ${RNF_HOME}/shkit/<version>/   copy of the dist tree
 #   ${RNF_HOME}/shkit/current      symlink to the active version
 #   ${RNF_HOME}/bin/rnfshk         symlink to current/rnfshk.sh
 #
 # Standalone entry point — curl it directly on a fresh machine:
-#   curl -fsSL https://github.com/rn-forge/rn-forge-shkit/releases/latest/download/install.sh | bash
+#   curl -fsSL https://github.com/rn-forge/shkit/releases/latest/download/install.sh | bash
 # or run it from a checkout/unpacked release: bash dist/shkit/install.sh
 #
-# When run next to an unpacked dist (sibling rn-forge-shkit.sh + VERSION
+# When run next to an unpacked dist (sibling shkit.sh + VERSION
 # present), installs that tree directly — this is how a freshly-extracted
 # tarball reaches this script. Otherwise (piped straight from curl, no
 # sibling files) it downloads the release tarball first, honoring
@@ -86,9 +86,9 @@ fetch_and_install() {
 
   local url
   if [ -n "${RNF_VERSION:-}" ]; then
-    url="${RNF_UPDATE_URL:-https://github.com/${RNF_GITHUB_ORG}/rn-forge-shkit/releases/download/v${RNF_VERSION}/rn-forge-shkit.tar.gz}"
+    url="${RNF_UPDATE_URL:-https://github.com/${RNF_GITHUB_ORG}/shkit/releases/download/v${RNF_VERSION}/shkit.tar.gz}"
   else
-    url="${RNF_UPDATE_URL:-https://github.com/${RNF_GITHUB_ORG}/rn-forge-shkit/releases/latest/download/rn-forge-shkit.tar.gz}"
+    url="${RNF_UPDATE_URL:-https://github.com/${RNF_GITHUB_ORG}/shkit/releases/latest/download/shkit.tar.gz}"
   fi
 
   local tmp
@@ -96,7 +96,7 @@ fetch_and_install() {
   trap 'rm -rf "${tmp}"' EXIT
 
   echo "install.sh: downloading ${url}" >&2
-  if ! curl -fsSL "$url" -o "${tmp}/rn-forge-shkit.tar.gz"; then
+  if ! curl -fsSL "$url" -o "${tmp}/shkit.tar.gz"; then
     echo "install.sh: download failed: ${url}" >&2
     exit 1
   fi
@@ -105,10 +105,10 @@ fetch_and_install() {
   # and a network failure fetching it both fall through to "skipping
   # verification" below — the tarball download above already proved network
   # access works, so this is treated as best-effort, not required.
-  if curl -fsSL "${url}.sha256" -o "${tmp}/rn-forge-shkit.tar.gz.sha256" 2>/dev/null; then
+  if curl -fsSL "${url}.sha256" -o "${tmp}/shkit.tar.gz.sha256" 2>/dev/null; then
     local expected actual
-    expected="$(awk '{print $1}' "${tmp}/rn-forge-shkit.tar.gz.sha256")"
-    actual="$(sha256_of "${tmp}/rn-forge-shkit.tar.gz")"
+    expected="$(awk '{print $1}' "${tmp}/shkit.tar.gz.sha256")"
+    actual="$(sha256_of "${tmp}/shkit.tar.gz")"
     if [ "$expected" != "$actual" ]; then
       echo "install.sh: checksum mismatch for ${url}" >&2
       exit 1
@@ -117,9 +117,9 @@ fetch_and_install() {
     echo "install.sh: no checksum found at ${url}.sha256, skipping verification" >&2
   fi
 
-  if ! tar -xzf "${tmp}/rn-forge-shkit.tar.gz" -C "$tmp" 2>/dev/null ||
-    [ ! -f "${tmp}/VERSION" ] || ! grep -q '^_RNF_VERSION=' "${tmp}/rn-forge-shkit.sh" 2>/dev/null; then
-    echo "install.sh: download is not an rn-forge-shkit dist: ${url}" >&2
+  if ! tar -xzf "${tmp}/shkit.tar.gz" -C "$tmp" 2>/dev/null ||
+    [ ! -f "${tmp}/VERSION" ] || ! grep -q '^_RNF_VERSION=' "${tmp}/shkit.sh" 2>/dev/null; then
+    echo "install.sh: download is not a shkit dist: ${url}" >&2
     exit 1
   fi
 
@@ -138,13 +138,13 @@ fetch_and_install() {
 }
 
 if [ "$FORCE_FETCH" = "1" ] || [ -z "${SRC_ROOT}" ] ||
-  [ ! -f "${SRC_ROOT}/rn-forge-shkit.sh" ] || [ ! -f "${SRC_ROOT}/VERSION" ]; then
+  [ ! -f "${SRC_ROOT}/shkit.sh" ] || [ ! -f "${SRC_ROOT}/VERSION" ]; then
   fetch_and_install
   exit 0
 fi
 
 # Source the bundle being installed for log_* helpers.
-. "${SRC_ROOT}/rn-forge-shkit.sh"
+. "${SRC_ROOT}/shkit.sh"
 
 DIST_VERSION="v$(read_dist_version "${SRC_ROOT}/VERSION")"
 PRODUCT_HOME="${RNF_HOME}/shkit"
@@ -212,4 +212,4 @@ migrate_legacy() {
 
 install_dist
 migrate_legacy
-log_success "rn-forge-shkit installed (current -> ${DIST_VERSION})"
+log_success "shkit installed (current -> ${DIST_VERSION})"

@@ -58,9 +58,9 @@ The output should include 'my-branch'
 End
 End
 
-Describe 'git_checkout'
+Describe 'git_branch_create'
 It 'creates a new branch and checks it out'
-When call git_checkout 'new-feature'
+When call git_branch_create 'new-feature'
 The status should equal 0
 The error should include 'new-feature'
 End
@@ -68,13 +68,13 @@ End
 It 'fails if the branch already exists'
 git checkout -qb existing-branch
 git checkout -q "$REPO_MAIN_BRANCH"
-When run git_checkout 'existing-branch'
+When run git_branch_create 'existing-branch'
 The status should not equal 0
 The error should include 'existing-branch'
 End
 
 It 'requires a branch name'
-When run git_checkout ''
+When run git_branch_create ''
 The status should equal 1
 The error should include 'branch name is required'
 End
