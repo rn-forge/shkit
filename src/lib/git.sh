@@ -164,3 +164,55 @@ git_squash() {
   fi
   return 0
 }
+
+# @description Prune remote-tracking branches deleted on origin, then delete local
+#   branches whose upstream is gone. Uses 'git branch -d' (safe delete) throughout,
+#   so branches with unmerged commits are skipped rather than destroyed. Never
+#   deletes the current branch.
+#   Pass --all to also delete local branches that have no upstream at all
+#   (never pushed to origin).
+#
+# @arg $1 string  Optional '--all' to also clean up local-only branches.
+# @exitcode 0 Success (including when there is nothing to prune).
+# @exitcode 1 Unknown argument, not in a git repository, or a git command failed.
+git_prune() {
+  local all=0 arg
+  for arg in "$@"; do
+    case "$arg" in
+    --all) all=1 ;;
+    *)
+      log_error "git_prune: unknown argument '${arg}'"
+      return 1
+      ;;
+    esac
+  done
+
+  local current
+  current="$(git_current_branch)" || return 1
+
+  log_info "Pruning stale remote-tracking branches for origin"
+  git remote prune origin || return 1
+
+  local branch upstream track deleted=0
+  while IFS=$'\t' read -r branch upstream track; do
+    [ "$branch" = "$current" ] && continue
+    case "$track" in
+    *'[gone]'*) ;;
+    *)
+      if [ "$all" = "1" ] && [ -z "$upstream" ]; then
+        :
+      else
+        continue
+      fi
+      ;;
+    esac
+    if git branch -d "$branch" 2>/dev/null; then
+      log_info "Deleted local branch: ${branch}"
+      deleted=$((deleted + 1))
+    else
+      log_warning "Skipped local branch (unmerged or in use): ${branch}"
+    fi
+  done < <(git for-each-ref --format='%(refname:short)%09%(upstream)%09%(upstream:track)' refs/heads/)
+
+  log_success "Pruned ${deleted} local branch(es)"
+}

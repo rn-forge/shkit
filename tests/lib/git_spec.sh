@@ -233,4 +233,78 @@ The status should equal 1
 The error should not equal ''
 End
 End
+
+Describe 'git_prune'
+# Set up a bare "remote" and clone it, so branches can have real upstreams
+# that later get deleted from the remote.
+setup_prune() {
+  REMOTE_DIR="$(mktemp -d)"
+  git init -q --bare "$REMOTE_DIR"
+  git -C "$REPO_DIR" remote add origin "$REMOTE_DIR"
+  git -C "$REPO_DIR" push -q origin "$REPO_MAIN_BRANCH"
+
+  git -C "$REPO_DIR" checkout -qb gone-branch
+  git -C "$REPO_DIR" push -q -u origin gone-branch
+  git -C "$REPO_DIR" checkout -q "$REPO_MAIN_BRANCH"
+  git -C "$REPO_DIR" push -q origin --delete gone-branch
+
+  git -C "$REPO_DIR" checkout -qb tracked-branch
+  git -C "$REPO_DIR" push -q -u origin tracked-branch
+  git -C "$REPO_DIR" checkout -q "$REPO_MAIN_BRANCH"
+
+  git -C "$REPO_DIR" checkout -qb local-only-branch
+  git -C "$REPO_DIR" checkout -q "$REPO_MAIN_BRANCH"
+}
+
+teardown_prune() {
+  rm -rf "$REMOTE_DIR"
+}
+
+Before 'setup_prune'
+After 'teardown_prune'
+
+It 'deletes local branches whose remote counterpart is gone'
+When call git_prune
+The status should equal 0
+The error should include 'Deleted local branch: gone-branch'
+The output should include 'Deleted branch gone-branch'
+End
+
+It 'keeps branches that still track an existing remote branch'
+git_prune >/dev/null 2>&1
+When call git_branch_list
+The output should include 'tracked-branch'
+End
+
+It 'does not touch local-only branches by default'
+git_prune >/dev/null 2>&1
+When call git_branch_list
+The output should include 'local-only-branch'
+End
+
+It 'removes local-only branches with --all'
+When call git_prune --all
+The error should include 'Deleted local branch: local-only-branch'
+The output should include 'Deleted branch local-only-branch'
+End
+
+It 'still keeps tracked branches with --all'
+git_prune --all >/dev/null 2>&1
+When call git_branch_list
+The output should include 'tracked-branch'
+End
+
+It 'never deletes the current branch'
+git -C "$REPO_DIR" checkout -q local-only-branch
+git_prune --all >/dev/null 2>&1
+When call git_branch_list
+The output should include 'local-only-branch'
+End
+
+It 'rejects unknown arguments'
+When run git_prune '--bogus'
+The status should equal 1
+The error should include 'unknown argument'
+End
+End
 End

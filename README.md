@@ -13,7 +13,7 @@ A bash/zsh library of reusable shell utilities. Source individual modules or the
 | `proc.sh` | `log.sh` | Process and command utilities |
 | `script.sh` | `log.sh`, `core.sh`, `console.sh` | Script lifecycle helpers — argument parsing, help display, exit traps |
 | `print.sh` | `console.sh` | Styled stdout output for human-facing script UI |
-| `git.sh` | `log.sh` | Git workflow helpers — branch management, commit, merge, squash |
+| `git.sh` | `log.sh` | Git workflow helpers — branch management, commit, merge, squash, prune |
 
 ## Installation
 
@@ -161,10 +161,13 @@ log_critical "unrecoverable — script should abort"
 rnfshk version   # print the installed library version
 rnfshk env       # print current RNF_* configuration
 rnfshk update    # update to the latest release (or RNF_VERSION pin)
+rnfshk cleanup   # remove old installed versions, keeping current
 rnfshk help      # list sub-commands
 ```
 
 `rnfshk update` delegates to the installed `install.sh` (override its tarball URL with `RNF_UPDATE_URL`, pin with `RNF_VERSION`). Versions install side by side under `~/.rn-forge/shkit/`; the `current` symlink flips to the new one. There's no `rnfshk install` — `install.sh` handles first-time setup (see [Installation](#installation) above), and every subsequent install goes through `update`.
+
+`rnfshk cleanup` deletes every version directory under `~/.rn-forge/shkit/` except the one `current` points to, prompting for confirmation first (bypass with `RNF_SKIP_CONFIRMATIONS=1`).
 
 ## Development
 

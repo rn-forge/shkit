@@ -26,6 +26,7 @@ Safe to source multiple times (guarded by _RNF_GIT_LOADED).
 * [git_commit](#git_commit)
 * [git_merge](#git_merge)
 * [git_squash](#git_squash)
+* [git_prune](#git_prune)
 
 ### git_current_branch
 
@@ -131,4 +132,22 @@ Pass --keep-branch to skip deletion.
 
 * **0**: Squash completed.
 * **1**: Message missing or merge failed.
+
+### git_prune
+
+Prune remote-tracking branches deleted on origin, then delete local
+branches whose upstream is gone. Uses 'git branch -d' (safe delete) throughout,
+so branches with unmerged commits are skipped rather than destroyed. Never
+deletes the current branch.
+Pass --all to also delete local branches that have no upstream at all
+(never pushed to origin).
+
+#### Arguments
+
+* **$1** (string): Optional '--all' to also clean up local-only branches.
+
+#### Exit codes
+
+* **0**: Success (including when there is nothing to prune).
+* **1**: Unknown argument, not in a git repository, or a git command failed.
 

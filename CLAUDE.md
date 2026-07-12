@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-`shkit` is a bash/zsh shell library of reusable utilities. Sourced modules live in `src/lib/` and are concatenated into a single bundle; management tooling lives alongside them: `src/rnfshk.sh` (standalone `rnfshk` dispatcher bin), `src/commands/` (its subcommands: `update`, `version`, `env`), `src/install.sh` (standalone installer — curlable directly, or delegated to by `rnfshk update` and `source.sh`), and `src/source.sh` (streaming-sourcing entry point for app/CI environments).
+`shkit` is a bash/zsh shell library of reusable utilities. Sourced modules live in `src/lib/` and are concatenated into a single bundle; management tooling lives alongside them: `src/rnfshk.sh` (standalone `rnfshk` dispatcher bin), `src/commands/` (its subcommands: `update`, `version`, `env`, `cleanup`), `src/install.sh` (standalone installer — curlable directly, or delegated to by `rnfshk update` and `source.sh`), and `src/source.sh` (streaming-sourcing entry point for app/CI environments).
 
 ## Commands
 
@@ -20,6 +20,8 @@ mise run test-zsh      # shellspec under zsh
 mise run test-all      # shellspec under bash AND zsh
 mise run coverage      # shellspec --shell bash --kcov; HTML+lcov report in coverage/
 mise run build         # generate dist/shkit/ tree + tarball + loose assets
+mise run install       # build + install to ~/.rn-forge
+mise run clean         # remove generated dist/ artifacts
 mise run docs          # generate docs/ from shdoc annotations via gawk
 mise run verify        # format-check + lint + coverage + build + docs (CI; needs kcov)
 mise run verify-local  # format-check + lint + test-all + build + docs (local dev; no kcov needed)
