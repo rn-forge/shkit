@@ -198,4 +198,4 @@ See [examples/demo.sh](examples/demo.sh) for a runnable walkthrough.
 
 ## API reference
 
-Per-module docs are generated into [`docs/`](docs/) by `mise run docs`.
+Per-module docs are generated into [`docs/`](docs/) by `mise run docs` and published at **[rn-forge.github.io/shkit](https://rn-forge.github.io/shkit/)**.
